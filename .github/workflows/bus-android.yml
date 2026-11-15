@@ -1,0 +1,32 @@
+name: Build Malindu Bus Simulator APK
+on:
+  push:
+    branches: [bus-game]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack Bus Simulator
+        run: |
+          unzip -q -o Malindu_Bus_Prototype.zip -d game
+          test -f game/app/build.gradle
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14'
+      - name: Build Android APK
+        working-directory: game
+        run: gradle --no-daemon --console=plain --stacktrace :app:assembleDebug
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: Malindu-Bus-Simulator-APK
+          path: game/app/build/outputs/apk/debug/app-debug.apk
